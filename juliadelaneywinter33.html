@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -18,12 +17,11 @@
     <!---
     <script src="charge107.js"></script>
     <script language="javascript" type="text/javascript" src="left107.js"></script>
-
     <script src="https://cdn.socket.io/socket.io-1.3.4.js"></script>
     -->
     <style>
     body {
-        background-color:lightblue;
+        background-color:lightyellow;
     }
     </style>
 
@@ -37,7 +35,6 @@
         [880, tempo * .25],
         [null, 50]
     ];
-
     function sensop(mag) {
         //newmag = 2 * ((1 - mag) - .5);
         newmag = mag
@@ -45,21 +42,16 @@
         return newmag;
     }
     $(document).ready(function() {
-
-
         //chargeplot = makeChargePlot();
-
         $("#togglesensors").click(function(e) {
             //console.log("togglesensors");
             $("#allsensors").toggleClass('hidden');
         });
-        //var socket = io.connect('http://10.48.102.xxx:3001'); //change this to match your robot
-        var socket = io.connect('http://10.48.102.109:3001'); //change this to match your robot
+        var socket = io.connect('http://10.48.102.111:3001'); //change this to match your robot
         batterycapacity(socket);
         leftsignal(socket);
         front_leftsignal(socket);
         socket.on('sensordata', function(data) {
-
             //console.log(data);
             $("#current").text(data.battery.current.amps);
             $("#voltage").text(data.battery.voltage.volts.toFixed(2));
@@ -67,52 +59,37 @@
             $("#front_left").text(data.cliff_sensors.front_left.signal.raw);
             $("#front_right").text(data.cliff_sensors.front_right.signal.raw);
             $("#right").text(data.cliff_sensors.right.signal.raw);
-            $("turnAround").text(data.cliff_sensors.front_right.signal.raw);
-
             $(".left_signal").css("opacity", sensop(data.cliff_sensors.left.signal.magnitude));
             $(".left_signal").text(sensop(data.cliff_sensors.left.signal.magnitude));
-
             $(".front_left_signal").css("opacity", sensop(data.cliff_sensors.front_left.signal.magnitude));
             $(".front_left_signal").text(sensop(data.cliff_sensors.front_left.signal.magnitude));
-
             $(".front_right_signal").css("opacity", sensop(data.cliff_sensors.front_right.signal.magnitude));
             $(".front_right_signal").text(sensop(data.cliff_sensors.front_right.signal.magnitude));
-
             $(".right_signal").css("opacity", sensop(data.cliff_sensors.right.signal.magnitude));
             $(".right_signal").text(sensop(data.cliff_sensors.right.signal.magnitude));
-
-            $(".turnAround_signal").css("opacity", sensop(data.cliff_sensors.front_right.signal.magnitude));
-            $(".turnAround_signal").text(sensop(data.cliff_sensors.front_right.signal.magnitude));
-
             if (data.song.playing == false) {
                 //socket.emit('sing', [[data.cliff_sensors.front_left.signal.magnitude * 1000,data.cliff_sensors.front_right.signal.magnitude * 1000]]);
             }
-
             $("#allsensors").text(JSON.stringify(data));
         });
-
         socket.on('countup', function(data) {
             //console.log(data);
             $("#countup").text(data);
         });
-
-
         $("#forward").click(function(e) {
             console.log('forward');
             socket.emit('drive', {
-                left: 25,
-                right: 25
+                left: 15,
+                right: 15
             });
         });
-
         $("#backward").click(function(e) {
             console.log('backward');
             socket.emit('drive', {
-                left: -25,
-                right: -25
+                left: -15,
+                right: -15
             });
         });
-
         $("#stop").click(function(e) {
             console.log('stop');
             socket.emit('drive', {
@@ -120,54 +97,37 @@
                 right: 0
             });
         });
-
-
         $("#turnLeft").click(function(e) {
             console.log('stop');
             socket.emit('drive', {
-                left: 25,
-                right: -25
+                left: -15,
+                right: 15
             });
         });
-
-
         $("#turnRight").click(function(e) {
             console.log('stop');
             socket.emit('drive', {
-                left: -25,
-                right: 25
+                left: 15,
+                right: -15
             });
         });
-
-         $("#turnAround").click(function(e) {
-            console.log('stop');
-            socket.emit('drive', {
-                left: -5,
-                right: 25
-            });
-        });
-
         $("#playsong").click(function(e) {
             socket.emit('sing', mysong);
         });
-
         $("#passiveMode").click(function(e) {
             socket.emit('passiveMode');
         });
         $("#safeMode").click(function(e) {
             socket.emit('safeMode');
         });
-
         $("#fullMode").click(function(e) {
             socket.emit('fullMode');
         });
-
-
         $('body').keydown(function(event) {
             console.log(event.which);
             speed = $("#speed").text();
             //speed = 100;
-            if (event.which === 87 || event.which === 38) //w, up arrow - move forward
+            if (event.which === 87) //w - move forward
             {
                 //socket.emit('sing', [[300,300]]);
                 event.preventDefault();
@@ -178,10 +138,8 @@
                     left: speed,
                     right: speed
                 });
-
             }
-
-            if (event.which === 83 || event.which === 40) //s, down arrow - move backward
+            if (event.which === 83) //s - move backward
             {
                 event.preventDefault();
                 speed = $("#speed").text();
@@ -192,67 +150,31 @@
                     right: speed
                 });
             }
-
-
-
-            if (event.which === 37) //left arrow - move right
+            if (event.which === 65) //d - move right
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                speed = 25;
+                speed = 50;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: speed,
                     right: -speed
                 });
-
             }
-
-            if (event.which === 65) //a - forward left
+            if (event.which === 68) //a - move left
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                (speed < 25) ? speed=25 : speed = speed;
-                $("#speed").text(speed);
-                socket.emit('drive', {
-                    left: Math.round(speed),
-                    right: Math.round(speed -25)
-                });
-
-            }
-
-            if (event.which === 68) //d - forward left
-            {
-                event.preventDefault();
-                speed = $("#speed").text();
-                (speed < 25) ? speed=25 : speed = speed;
-                $("#speed").text(speed);
-                socket.emit('drive', {
-                    left: Math.round(speed - 25),
-                    right: Math.round(speed)
-                });
-
-            }
-
-            if (event.which === 39) //right arrow - move left
-            {
-                event.preventDefault();
-                speed = $("#speed").text();
-                speed = 25;
+                speed = 50;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: -speed,
                     right: speed
                 });
             }
-
             if (event.which === 32) //space - stop
-
             {
                 event.preventDefault();
-
-
-
                 function slowtostop() {
                     speed = $("#speed").text();
                     if (Math.abs(speed) <= 50) {
@@ -275,12 +197,9 @@
                         slowtostop();
                     }, 40);
                 }
-
                 slowtostop();
-
             }
         });
-
     });
     </script>
 
@@ -337,7 +256,7 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-                <button class="btn-primary btn-lg btn-block" id="forward"><span class="glyphicon glyphicon-arrow-up rotate-left-45"></span>Forward-left
+                <button class="btn-primary btn-lg btn-block" id="forward">Forward-left<span class="glyphicon glyphicon-arrow-up"></span>
                 </button>
             </div>
             <div class="col-md-2">
@@ -346,14 +265,15 @@
             </div>
             <div class="col-md-2">
                 </button>
-                <button class="btn-primary btn-lg btn-block" id="forward">Forward-right<span class="glyphicon glyphicon-arrow-up rotate-right-45"></span>
+                <button class="btn-primary btn-lg btn-block" id="forward">Forward-right<span class="glyphicon glyphicon-arrow-up"></span>
                 </button>
             </div>
 
         </div>
         <div class="row">
             <div class="col-md-2">
-                <button class="btn-primary btn-lg btn-block" id="turnLeft"><span class="glyphicon glyphicon-arrow-left"> Left</span>
+                <button class="btn-primary btn-lg btn-block" id="turnLeft">Left
+                    <span class="glyphicon glyphicon-arrow-left"></span>
                 </button>
             </div>
             <div class="col-md-2 ">
@@ -370,7 +290,7 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-                <button class="btn-primary btn-lg btn-block" id="backleft">Back-Left
+                <button class="btn-primary btn-lg btn-block" id="backward">Back-Left<span class="glyphicon glyphicon-arrow-down"></span>
                 </button>
             </div>
             <div class="col-md-2">
@@ -378,7 +298,7 @@
                 </button>
             </div>
             <div class="col-md-2">
-                <button class="btn-primary btn-lg btn-block" id="backright">Back-Right
+                <button class="btn-primary btn-lg btn-block" id="backward">Back-Right<span class="glyphicon glyphicon-arrow-down"></span>
                 </button>
             </div>
         </div>
